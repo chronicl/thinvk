@@ -1,0 +1,15 @@
+[package]
+name = "no_graphics"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ash = "0.38"
+ash-window = "0.13"
+winit = "0.30"
+
+[patch.crates-io]
+# Descriptor heaps and device-address commands require the current upstream bindings.
+ash = { git = "https://github.com/ash-rs/ash", rev = "f4c2ca3e4f6b998d5254ad101a32f024d87cdec2" }
+# Keep the surface adapter on the same ash API revision.
+ash-window = { git = "https://github.com/ash-rs/ash", rev = "f4c2ca3e4f6b998d5254ad101a32f024d87cdec2" }
