@@ -15,6 +15,7 @@
 #![allow(unsafe_op_in_unsafe_fn)]
 
 use ash::vk;
+use ash::vk::TaggedStructure as _;
 use std::{
     collections::VecDeque,
     ffi::{CStr, c_void},
@@ -1627,7 +1628,7 @@ impl Device {
         let mut flags =
             vk::MemoryAllocateFlagsInfo::default().flags(vk::MemoryAllocateFlags::DEVICE_ADDRESS);
         let allocation = vk::MemoryAllocateInfo::default()
-            .push_next(&mut flags)
+            .push(&mut flags)
             .allocation_size(requirements.size)
             .memory_type_index(memory_type);
         result.memory = match self.vk().allocate_memory(&allocation, None) {
@@ -1759,8 +1760,8 @@ unsafe fn inspect_candidate(
     };
     {
         let mut properties = vk::PhysicalDeviceProperties2::default()
-            .push_next(&mut result.heap_properties)
-            .push_next(&mut result.vulkan12_properties);
+            .push(&mut result.heap_properties)
+            .push(&mut result.vulkan12_properties);
         state
             .instance
             .get_physical_device_properties2(physical_device, &mut properties);
@@ -2060,7 +2061,7 @@ pub fn create_device(desc: &DeviceDesc) -> Result<*mut Device> {
         state.texture_compression_etc2 = selected.texture_compression_etc2;
         for format in FORMATS {
             let mut features = vk::FormatProperties3::default();
-            let mut properties = vk::FormatProperties2::default().push_next(&mut features);
+            let mut properties = vk::FormatProperties2::default().push(&mut features);
             state.instance.get_physical_device_format_properties2(
                 state.physical_device,
                 format.vk(),
@@ -2473,7 +2474,7 @@ impl Device {
         let mut timeline =
             vk::SemaphoreTypeCreateInfo::default().semaphore_type(vk::SemaphoreType::TIMELINE);
         self.command_retirement = self.vk().create_semaphore(
-            &vk::SemaphoreCreateInfo::default().push_next(&mut timeline),
+            &vk::SemaphoreCreateInfo::default().push(&mut timeline),
             None,
         )?;
         for _ in 0..INITIAL_COMMAND_CONTEXT_COUNT {
@@ -2775,7 +2776,7 @@ pub unsafe fn create_timeline_semaphore(
         .semaphore_type(vk::SemaphoreType::TIMELINE)
         .initial_value(initial_value);
     let semaphore = (*device).vk().create_semaphore(
-        &vk::SemaphoreCreateInfo::default().push_next(&mut timeline),
+        &vk::SemaphoreCreateInfo::default().push(&mut timeline),
         None,
     )?;
     Ok(Box::into_raw(Box::new(TimelineSemaphore {
@@ -3166,7 +3167,7 @@ pub unsafe fn write_texture_descriptor(
         vk::ImageUsageFlags::STORAGE
     });
     let view = vk::ImageViewCreateInfo::default()
-        .push_next(&mut usage)
+        .push(&mut usage)
         .image(texture.image)
         .view_type(texture.r#type.vk_view())
         .format(
@@ -3354,7 +3355,7 @@ unsafe fn recreate_swapchain(swapchain: *mut Swapchain) -> Result<()> {
     );
     let mut mode = vk::SurfacePresentModeKHR::default().present_mode(SWAPCHAIN_PRESENT_MODE);
     let surface_info = vk::PhysicalDeviceSurfaceInfo2KHR::default()
-        .push_next(&mut mode)
+        .push(&mut mode)
         .surface((*device).surface);
     let mut capabilities_info = vk::SurfaceCapabilities2KHR::default();
     (*device)
@@ -3403,7 +3404,7 @@ unsafe fn recreate_swapchain(swapchain: *mut Swapchain) -> Result<()> {
     let modes = [SWAPCHAIN_PRESENT_MODE];
     let mut modes_info = vk::SwapchainPresentModesCreateInfoKHR::default().present_modes(&modes);
     let info = vk::SwapchainCreateInfoKHR::default()
-        .push_next(&mut modes_info)
+        .push(&mut modes_info)
         .surface((*device).surface)
         .min_image_count(requested_count)
         .image_format(requested_format)
@@ -3576,7 +3577,7 @@ unsafe fn create_raster_pso(
     let mut fragment_module = vk::ShaderModuleCreateInfo::default().code(fragment_spirv);
     let stages = [
         vk::PipelineShaderStageCreateInfo::default()
-            .push_next(&mut first_module)
+            .push(&mut first_module)
             .stage(if mesh {
                 vk::ShaderStageFlags::MESH_EXT
             } else {
@@ -3584,7 +3585,7 @@ unsafe fn create_raster_pso(
             })
             .name(if mesh { c"meshMain" } else { c"vertexMain" }),
         vk::PipelineShaderStageCreateInfo::default()
-            .push_next(&mut fragment_module)
+            .push(&mut fragment_module)
             .stage(vk::ShaderStageFlags::FRAGMENT)
             .name(c"fragmentMain"),
     ];
@@ -3652,8 +3653,8 @@ unsafe fn create_raster_pso(
     let mut flags = vk::PipelineCreateFlags2CreateInfo::default()
         .flags(vk::PipelineCreateFlags2::DESCRIPTOR_HEAP_EXT);
     let mut info = vk::GraphicsPipelineCreateInfo::default()
-        .push_next(&mut flags)
-        .push_next(&mut rendering)
+        .push(&mut flags)
+        .push(&mut rendering)
         .stages(&stages[..if fragment_spirv.is_empty() { 1 } else { 2 }])
         .viewport_state(&viewport)
         .rasterization_state(&rasterization)
@@ -3719,13 +3720,13 @@ pub unsafe fn create_compute_pso(device: *mut Device, compute_spirv: &[u32]) -> 
     debug_assert!(!device.is_null());
     let mut module = vk::ShaderModuleCreateInfo::default().code(compute_spirv);
     let stage = vk::PipelineShaderStageCreateInfo::default()
-        .push_next(&mut module)
+        .push(&mut module)
         .stage(vk::ShaderStageFlags::COMPUTE)
         .name(c"computeMain");
     let mut flags = vk::PipelineCreateFlags2CreateInfo::default()
         .flags(vk::PipelineCreateFlags2::DESCRIPTOR_HEAP_EXT);
     let info = vk::ComputePipelineCreateInfo::default()
-        .push_next(&mut flags)
+        .push(&mut flags)
         .stage(stage)
         .base_pipeline_index(-1);
     let mut pipeline = vk::Pipeline::null();
@@ -4022,7 +4023,7 @@ pub unsafe fn submit_and_present(
     let handles = [(*swapchain).handle];
     let indices = [(*swapchain).image_index];
     let present = vk::PresentInfoKHR::default()
-        .push_next(&mut fence_info)
+        .push(&mut fence_info)
         .wait_semaphores(&rendered)
         .swapchains(&handles)
         .image_indices(&indices);
