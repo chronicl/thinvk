@@ -41,6 +41,7 @@ pub enum Error {
     DeviceLost,
     DriverError,
 }
+
 impl From<vk::Result> for Error {
     fn from(result: vk::Result) -> Self {
         match result {
@@ -57,6 +58,7 @@ impl From<vk::Result> for Error {
         }
     }
 }
+
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(match self {
@@ -66,7 +68,9 @@ impl std::fmt::Display for Error {
         })
     }
 }
+
 impl std::error::Error for Error {}
+
 pub type Result<T> = std::result::Result<T, Error>;
 
 fn require<T>(result: std::result::Result<T, vk::Result>) -> T {
@@ -75,12 +79,14 @@ fn require<T>(result: std::result::Result<T, vk::Result>) -> T {
         std::process::abort()
     })
 }
+
 fn require_error<T>(result: Result<T>) -> T {
     result.unwrap_or_else(|error| {
         eprintln!("NoGraphicsAPI: {error}");
         std::process::abort()
     })
 }
+
 fn align_up(value: u64, alignment: u64) -> u64 {
     debug_assert_ne!(alignment, 0);
     value.div_ceil(alignment) * alignment
@@ -162,6 +168,7 @@ pub enum TextureType {
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct TextureUsage(pub u32);
+
 impl TextureUsage {
     pub const NONE: Self = Self(0);
     pub const SAMPLED: Self = Self(1 << 0);
@@ -170,19 +177,24 @@ impl TextureUsage {
     pub const DEPTH_STENCIL_ATTACHMENT: Self = Self(1 << 3);
     pub const TRANSFER_SOURCE: Self = Self(1 << 4);
     pub const TRANSFER_DESTINATION: Self = Self(1 << 5);
+
     pub const fn contains(self, other: Self) -> bool {
         self.0 & other.0 == other.0
     }
+
     pub const fn intersects(self, other: Self) -> bool {
         self.0 & other.0 != 0
     }
 }
+
 impl std::ops::BitOr for TextureUsage {
     type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self {
         Self(self.0 | rhs.0)
     }
 }
+
 impl std::ops::BitOrAssign for TextureUsage {
     fn bitor_assign(&mut self, rhs: Self) {
         self.0 |= rhs.0;
@@ -304,6 +316,7 @@ pub enum StencilOp {
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Stage(pub u64);
+
 impl Stage {
     pub const NONE: Self = Self(0);
     pub const INDIRECT: Self = Self(1 << 6);
@@ -317,19 +330,24 @@ impl Stage {
     pub const TRANSFER: Self = Self(1 << 0);
     pub const HOST: Self = Self(1 << 5);
     pub const ALL_COMMANDS: Self = Self(1 << 10);
+
     pub const fn contains(self, other: Self) -> bool {
         self.0 & other.0 == other.0
     }
+
     pub const fn intersects(self, other: Self) -> bool {
         self.0 & other.0 != 0
     }
 }
+
 impl std::ops::BitOr for Stage {
     type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self {
         Self(self.0 | rhs.0)
     }
 }
+
 impl std::ops::BitOrAssign for Stage {
     fn bitor_assign(&mut self, rhs: Self) {
         self.0 |= rhs.0;
@@ -338,6 +356,7 @@ impl std::ops::BitOrAssign for Stage {
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Access(pub u64);
+
 impl Access {
     pub const NONE: Self = Self(0);
     pub const TRANSFER_READ: Self = Self(1 << 0);
@@ -352,19 +371,24 @@ impl Access {
     pub const INDEX_READ: Self = Self(1 << 9);
     pub const HOST_READ: Self = Self(1 << 10);
     pub const DESCRIPTOR_READ: Self = Self(1 << 11);
+
     pub const fn contains(self, other: Self) -> bool {
         self.0 & other.0 == other.0
     }
+
     pub const fn intersects(self, other: Self) -> bool {
         self.0 & other.0 != 0
     }
 }
+
 impl std::ops::BitOr for Access {
     type Output = Self;
+
     fn bitor(self, rhs: Self) -> Self {
         Self(self.0 | rhs.0)
     }
 }
+
 impl std::ops::BitOrAssign for Access {
     fn bitor_assign(&mut self, rhs: Self) {
         self.0 |= rhs.0;
@@ -428,6 +452,7 @@ pub struct Uint32x2 {
     pub x: u32,
     pub y: u32,
 }
+
 impl Default for Uint32x2 {
     fn default() -> Self {
         Self { x: 0, y: 0 }
@@ -441,6 +466,7 @@ pub struct Uint32x3 {
     pub y: u32,
     pub z: u32,
 }
+
 impl Default for Uint32x3 {
     fn default() -> Self {
         Self { x: 0, y: 0, z: 0 }
@@ -453,6 +479,7 @@ pub struct SizeAlign {
     pub size: u64,
     pub align: u64,
 }
+
 impl Default for SizeAlign {
     fn default() -> Self {
         Self { size: 0, align: 0 }
@@ -466,6 +493,7 @@ pub struct TextureFormatInfo {
     pub depth: bool,
     pub stencil: bool,
 }
+
 impl Default for TextureFormatInfo {
     fn default() -> Self {
         Self {
@@ -487,6 +515,7 @@ pub struct TextureDesc {
     pub mutable_format: bool,
     pub usage: TextureUsage,
 }
+
 impl Default for TextureDesc {
     fn default() -> Self {
         Self {
@@ -506,6 +535,7 @@ pub struct RenderViewDesc {
     pub mip_level: u32,
     pub slice: u32,
 }
+
 impl Default for RenderViewDesc {
     fn default() -> Self {
         Self {
@@ -524,6 +554,7 @@ pub struct TextureDescriptorDesc {
     pub base_layer: u32,
     pub layer_count: u32,
 }
+
 impl Default for TextureDescriptorDesc {
     fn default() -> Self {
         Self {
@@ -547,6 +578,7 @@ pub struct TextureCopyDesc {
     pub row_pitch_bytes: u64,
     pub slice_pitch_bytes: u64,
 }
+
 impl Default for TextureCopyDesc {
     fn default() -> Self {
         Self {
@@ -573,6 +605,7 @@ pub struct SamplerDesc {
     pub compare_enabled: bool,
     pub compare: CompareOp,
 }
+
 impl Default for SamplerDesc {
     fn default() -> Self {
         Self {
@@ -595,6 +628,7 @@ pub struct BlendComponentState {
     pub destination: BlendFactor,
     pub operation: BlendOp,
 }
+
 impl Default for BlendComponentState {
     fn default() -> Self {
         Self {
@@ -611,6 +645,7 @@ pub struct BlendState {
     pub color: BlendComponentState,
     pub alpha: BlendComponentState,
 }
+
 impl Default for BlendState {
     fn default() -> Self {
         Self {
@@ -627,6 +662,7 @@ pub struct ColorTargetDesc {
     pub blend: BlendState,
     pub write_mask: u8,
 }
+
 impl Default for ColorTargetDesc {
     fn default() -> Self {
         Self {
@@ -644,6 +680,7 @@ pub struct RasterizationState {
     pub depth_bias_clamp: f32,
     pub depth_bias_slope: f32,
 }
+
 impl Default for RasterizationState {
     fn default() -> Self {
         Self {
@@ -664,6 +701,7 @@ pub struct Viewport {
     pub min_depth: f32,
     pub max_depth: f32,
 }
+
 impl Default for Viewport {
     fn default() -> Self {
         Self {
@@ -684,6 +722,7 @@ pub struct Scissor {
     pub width: u32,
     pub height: u32,
 }
+
 impl Default for Scissor {
     fn default() -> Self {
         Self {
@@ -703,6 +742,7 @@ pub struct StencilFaceState {
     pub depth_fail: StencilOp,
     pub reference: u8,
 }
+
 impl Default for StencilFaceState {
     fn default() -> Self {
         Self {
@@ -726,6 +766,7 @@ pub struct DepthStencilState {
     pub front: StencilFaceState,
     pub back: StencilFaceState,
 }
+
 impl Default for DepthStencilState {
     fn default() -> Self {
         Self {
@@ -750,6 +791,7 @@ pub struct GraphicsPSODesc<'a> {
     pub stencil_format: Format,
     pub rasterization: RasterizationState,
 }
+
 impl Default for GraphicsPSODesc<'_> {
     fn default() -> Self {
         Self {
@@ -772,6 +814,7 @@ pub struct MeshPSODesc<'a> {
     pub stencil_format: Format,
     pub rasterization: RasterizationState,
 }
+
 impl Default for MeshPSODesc<'_> {
     fn default() -> Self {
         Self {
@@ -792,6 +835,7 @@ pub struct ClearColor {
     pub z: f32,
     pub w: f32,
 }
+
 impl Default for ClearColor {
     fn default() -> Self {
         Self {
@@ -810,6 +854,7 @@ pub struct ColorAttachment {
     pub store: StoreOp,
     pub clear: ClearColor,
 }
+
 impl Default for ColorAttachment {
     fn default() -> Self {
         Self {
@@ -828,6 +873,7 @@ pub struct DepthAttachment {
     pub store: StoreOp,
     pub clear: f32,
 }
+
 impl Default for DepthAttachment {
     fn default() -> Self {
         Self {
@@ -846,6 +892,7 @@ pub struct StencilAttachment {
     pub store: StoreOp,
     pub clear: u8,
 }
+
 impl Default for StencilAttachment {
     fn default() -> Self {
         Self {
@@ -863,6 +910,7 @@ pub struct RenderingDesc<'a> {
     pub depth: DepthAttachment,
     pub stencil: StencilAttachment,
 }
+
 impl Default for RenderingDesc<'_> {
     fn default() -> Self {
         Self {
@@ -1037,6 +1085,7 @@ pub struct GpuRange {
     pub gpu: u64,
     pub size: u64,
 }
+
 #[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub struct GpuCpuRange<T = u8> {
@@ -1044,6 +1093,7 @@ pub struct GpuCpuRange<T = u8> {
     pub gpu: u64,
     pub size: u64,
 }
+
 impl<T> Default for GpuCpuRange<T> {
     fn default() -> Self {
         Self {
@@ -1053,6 +1103,7 @@ impl<T> Default for GpuCpuRange<T> {
         }
     }
 }
+
 impl<T> From<GpuCpuRange<T>> for GpuRange {
     fn from(range: GpuCpuRange<T>) -> Self {
         Self {
@@ -1061,31 +1112,37 @@ impl<T> From<GpuCpuRange<T>> for GpuRange {
         }
     }
 }
+
 #[derive(Debug, Default)]
 pub struct GpuHeap {
     pub range: GpuCpuRange,
     owner: *mut GpuHeapOwner,
 }
+
 impl From<&GpuHeap> for GpuRange {
     fn from(heap: &GpuHeap) -> Self {
         heap.range.into()
     }
 }
+
 #[derive(Debug, Default)]
 pub struct TextureHeap {
     pub size: u64,
     owner: *mut TextureHeapOwner,
 }
+
 #[derive(Clone, Copy, Debug, Default)]
 pub struct TimelinePoint {
     pub semaphore: *mut TimelineSemaphore,
     pub value: u64,
 }
+
 #[derive(Clone, Copy, Debug, Default)]
 pub struct SwapchainFrame {
     pub render_view: *mut RenderView,
     pub extent: Uint32x2,
 }
+
 #[derive(Clone, Debug, Default)]
 pub struct DeviceCaps {
     pub device_name: String,
@@ -1099,12 +1156,14 @@ pub struct DeviceCaps {
     pub texture_compression_astc: bool,
     pub storage_input_output16: bool,
 }
+
 pub struct DeviceDesc {
     pub window: Option<Rc<Window>>,
     pub swapchain_format: Format,
     pub desired_swapchain_image_count: u32,
     pub timestamp_query_count: u32,
 }
+
 impl Default for DeviceDesc {
     fn default() -> Self {
         Self {
@@ -1143,6 +1202,7 @@ pub const fn get_texture_format_info(format: Format) -> TextureFormatInfo {
         stencil: matches!(format, S8Uint | D24UnormS8Uint | D32FloatS8Uint),
     }
 }
+
 fn compatible_view_formats(image: Format, view: Format) -> bool {
     if image == view {
         return true;
@@ -1166,6 +1226,7 @@ fn compatible_view_formats(image: Format, view: Format) -> bool {
             | (Bc7Srgb, Bc7Unorm)
     )
 }
+
 fn image_aspects(format: Format) -> vk::ImageAspectFlags {
     let info = get_texture_format_info(format);
     let mut result = vk::ImageAspectFlags::empty();
@@ -1180,6 +1241,7 @@ fn image_aspects(format: Format) -> vk::ImageAspectFlags {
     }
     result
 }
+
 impl TextureType {
     fn vk(self) -> vk::ImageType {
         match self {
@@ -1188,6 +1250,7 @@ impl TextureType {
             _ => vk::ImageType::TYPE_2D,
         }
     }
+
     fn vk_view(self) -> vk::ImageViewType {
         match self {
             Self::OneD => vk::ImageViewType::TYPE_1D,
@@ -1199,6 +1262,7 @@ impl TextureType {
         }
     }
 }
+
 fn required_format_features(usage: TextureUsage) -> vk::FormatFeatureFlags2 {
     let mut result = vk::FormatFeatureFlags2::empty();
     if usage.intersects(TextureUsage::SAMPLED) {
@@ -1223,6 +1287,7 @@ fn required_format_features(usage: TextureUsage) -> vk::FormatFeatureFlags2 {
     }
     result
 }
+
 fn image_usage(usage: TextureUsage) -> vk::ImageUsageFlags {
     let mut result = vk::ImageUsageFlags::empty();
     if usage.intersects(TextureUsage::SAMPLED) {
@@ -1245,6 +1310,7 @@ fn image_usage(usage: TextureUsage) -> vk::ImageUsageFlags {
     }
     result
 }
+
 const UNIVERSAL_BUFFER_USAGE: vk::BufferUsageFlags = vk::BufferUsageFlags::from_raw(
     vk::BufferUsageFlags::SHADER_DEVICE_ADDRESS.as_raw()
         | vk::BufferUsageFlags::STORAGE_BUFFER.as_raw()
@@ -1277,11 +1343,13 @@ fn is_usable_memory_type(properties: &vk::PhysicalDeviceMemoryProperties, index:
             .flags
             .intersects(vk::MemoryHeapFlags::TILE_MEMORY_QCOM)
 }
+
 fn has_name(values: &[vk::ExtensionProperties], name: &CStr) -> bool {
     values
         .iter()
         .any(|value| unsafe { CStr::from_ptr(value.extension_name.as_ptr()) == name })
 }
+
 unsafe extern "system" fn debug_callback(
     severity: vk::DebugUtilsMessageSeverityFlagsEXT,
     _: vk::DebugUtilsMessageTypeFlagsEXT,
@@ -1315,6 +1383,7 @@ macro_rules! device_functions {
         }
     };
 }
+
 device_functions! {
     write_sampler_descriptors: PFN_vkWriteSamplerDescriptorsEXT = c"vkWriteSamplerDescriptorsEXT",
     write_resource_descriptors: PFN_vkWriteResourceDescriptorsEXT = c"vkWriteResourceDescriptorsEXT",
@@ -1332,6 +1401,7 @@ device_functions! {
     cmd_copy_image_to_memory: PFN_vkCmdCopyImageToMemoryKHR = c"vkCmdCopyImageToMemoryKHR",
     cmd_copy_query_pool_results_to_memory: PFN_vkCmdCopyQueryPoolResultsToMemoryKHR = c"vkCmdCopyQueryPoolResultsToMemoryKHR",
 }
+
 #[derive(Default)]
 struct BackingBuffer {
     buffer: vk::Buffer,
@@ -1339,18 +1409,22 @@ struct BackingBuffer {
     mapped: *mut c_void,
     address: u64,
 }
+
 struct GpuHeapOwner {
     state: *mut Device,
     backing: BackingBuffer,
 }
+
 struct TextureHeapOwner {
     state: *mut Device,
     memory: vk::DeviceMemory,
 }
+
 pub struct TimelineSemaphore {
     state: *mut Device,
     semaphore: vk::Semaphore,
 }
+
 #[derive(Default)]
 pub struct CommandBuffer {
     state: *mut Device,
@@ -1364,6 +1438,7 @@ pub struct CommandBuffer {
     retire_value: u64,
     swapchain: *mut Swapchain,
 }
+
 #[derive(Default)]
 struct TextureInitialization {
     image: vk::Image,
@@ -1374,11 +1449,13 @@ struct TextureInitialization {
     next: *mut TextureInitialization,
     owner: *mut TextureInitializationList,
 }
+
 #[derive(Default)]
 struct TextureInitializationList {
     first: *mut TextureInitialization,
     last: *mut TextureInitialization,
 }
+
 unsafe fn append_texture_initialization(
     list: *mut TextureInitializationList,
     initialization: *mut TextureInitialization,
@@ -1397,6 +1474,7 @@ unsafe fn append_texture_initialization(
     }
     (*list).last = initialization;
 }
+
 unsafe fn remove_texture_initialization(initialization: *mut TextureInitialization) {
     let list = (*initialization).owner;
     debug_assert!(!list.is_null());
@@ -1414,6 +1492,7 @@ unsafe fn remove_texture_initialization(initialization: *mut TextureInitializati
     (*initialization).previous = ptr::null_mut();
     (*initialization).next = ptr::null_mut();
 }
+
 #[derive(Clone, Copy, Default)]
 struct PresentContext {
     acquired: vk::Semaphore,
@@ -1422,21 +1501,25 @@ struct PresentContext {
     swapchain: vk::SwapchainKHR,
     present_pending: bool,
 }
+
 #[derive(Clone, Copy, Default)]
 struct RetiredSwapchain {
     handle: vk::SwapchainKHR,
     views: [vk::ImageView; MAX_SWAPCHAIN_IMAGES],
     view_count: usize,
 }
+
 struct DeferredSwapchainImage {
     retire_value: u64,
     swapchain: vk::SwapchainKHR,
     view: vk::ImageView,
 }
+
 #[derive(Default)]
 struct SwapchainDeleteQueue {
     entries: VecDeque<DeferredSwapchainImage>,
 }
+
 impl SwapchainDeleteQueue {
     fn push(&mut self, retire_value: u64, swapchain: vk::SwapchainKHR, view: vk::ImageView) {
         debug_assert!(swapchain != vk::SwapchainKHR::null() && view != vk::ImageView::null());
@@ -1451,6 +1534,7 @@ impl SwapchainDeleteQueue {
             view,
         });
     }
+
     unsafe fn collect(
         &mut self,
         device: &ash::Device,
@@ -1474,6 +1558,7 @@ impl SwapchainDeleteQueue {
         }
     }
 }
+
 pub struct Texture {
     state: *mut Device,
     image: vk::Image,
@@ -1485,6 +1570,7 @@ pub struct Texture {
     format: Format,
     initialization: TextureInitialization,
 }
+
 #[derive(Clone, Copy, Default)]
 pub struct RenderView {
     state: *mut Device,
@@ -1493,6 +1579,7 @@ pub struct RenderView {
     height: u32,
     swapchain_view: bool,
 }
+
 struct Swapchain {
     state: *mut Device,
     handle: vk::SwapchainKHR,
@@ -1511,6 +1598,7 @@ struct Swapchain {
     acquired: bool,
     recreate_required: bool,
 }
+
 pub struct PSO {
     state: *mut Device,
     pso: vk::Pipeline,
@@ -1558,16 +1646,20 @@ pub struct Device {
     present_context_count: usize,
     next_present_context: usize,
 }
+
 impl Device {
     fn vk(&self) -> &ash::Device {
         self.device.as_ref().unwrap()
     }
+
     fn functions(&self) -> &DeviceFunctions {
         self.functions.as_ref().unwrap()
     }
+
     fn swapchains(&self) -> &ash::khr::swapchain::Device {
         self.swapchain_api.as_ref().unwrap()
     }
+
     fn find_memory_type(
         &self,
         bits: u32,
@@ -1598,6 +1690,7 @@ impl Device {
         }
         best.map(|b| b.3)
     }
+
     unsafe fn create_backing_buffer(
         &self,
         size: u64,
@@ -1667,6 +1760,7 @@ impl Device {
         Ok(result)
     }
 }
+
 #[derive(Default)]
 struct QueriedFeatures {
     core: vk::PhysicalDeviceFeatures2<'static>,
@@ -1681,6 +1775,7 @@ struct QueriedFeatures {
     mesh_shader: vk::PhysicalDeviceMeshShaderFeaturesEXT<'static>,
     swapchain_maintenance1: vk::PhysicalDeviceSwapchainMaintenance1FeaturesKHR<'static>,
 }
+
 impl QueriedFeatures {
     // Link only after the structure reaches its call-site address; never move a linked chain.
     fn link(&mut self, presentation: bool, unified: bool) {
@@ -1704,6 +1799,7 @@ impl QueriedFeatures {
         };
     }
 }
+
 #[derive(Default)]
 struct Candidate {
     physical_device: vk::PhysicalDevice,
@@ -1720,6 +1816,7 @@ struct Candidate {
     heap_properties: vk::PhysicalDeviceDescriptorHeapPropertiesEXT<'static>,
     vulkan12_properties: vk::PhysicalDeviceVulkan12Properties<'static>,
 }
+
 const REQUIRED_DEVICE_EXTENSIONS: [&CStr; 4] = [
     ash::ext::descriptor_heap::NAME,
     ash::khr::device_address_commands::NAME,
@@ -2186,12 +2283,14 @@ pub fn create_device(desc: &DeviceDesc) -> Result<*mut Device> {
         Ok(Box::into_raw(state))
     }
 }
+
 /// Destroys the device after all of its resources have been destroyed.
 pub unsafe fn destroy_device(device: *mut Device) {
     if !device.is_null() {
         drop(Box::from_raw(device));
     }
 }
+
 impl Drop for Device {
     fn drop(&mut self) {
         unsafe {
@@ -2223,6 +2322,7 @@ impl Drop for Device {
         }
     }
 }
+
 unsafe fn buffer_memory_requirements(
     device: &Device,
     usage: vk::BufferUsageFlags,
@@ -2238,6 +2338,7 @@ unsafe fn buffer_memory_requirements(
         .get_device_buffer_memory_requirements(&info, &mut requirements);
     requirements.memory_requirements
 }
+
 unsafe fn supports_gpu_heap_memory(device: &Device) -> bool {
     let ordinary = buffer_memory_requirements(device, UNIVERSAL_BUFFER_USAGE);
     if device
@@ -2275,6 +2376,7 @@ unsafe fn supports_gpu_heap_memory(device: &Device) -> bool {
         )
         .is_some()
 }
+
 fn fits_image_format_properties(
     info: &vk::ImageCreateInfo<'_>,
     properties: &vk::ImageFormatProperties,
@@ -2285,6 +2387,7 @@ fn fits_image_format_properties(
         && info.mip_levels <= properties.max_mip_levels
         && info.array_layers <= properties.max_array_layers
 }
+
 unsafe fn image_format_properties(
     device: &Device,
     info: &vk::ImageCreateInfo<'_>,
@@ -2311,6 +2414,7 @@ unsafe fn image_format_properties(
         }
     }
 }
+
 unsafe fn image_memory_requirements(
     device: &Device,
     info: &vk::ImageCreateInfo<'_>,
@@ -2322,6 +2426,7 @@ unsafe fn image_memory_requirements(
     );
     requirements.memory_requirements
 }
+
 unsafe fn select_texture_memory_type(device: &mut Device) -> bool {
     let color_features = device.format_features[Format::Rgba8Unorm as usize];
     if !color_features.contains(vk::FormatFeatureFlags2::SAMPLED_IMAGE) {
@@ -2482,6 +2587,7 @@ impl Device {
         }
         Ok(())
     }
+
     unsafe fn create_command_context(&self, context: &mut CommandBuffer) -> Result<()> {
         context.command_pool = self.vk().create_command_pool(
             &vk::CommandPoolCreateInfo::default()
@@ -2521,6 +2627,7 @@ impl Device {
         }
         Ok(())
     }
+
     unsafe fn grow_command_context_pool(&mut self) -> Result<()> {
         let mut context = Box::new(CommandBuffer::default());
         self.create_command_context(&mut context)?;
@@ -2540,6 +2647,7 @@ impl Device {
         }
         Ok(())
     }
+
     unsafe fn destroy_command_context(&self, context: &mut CommandBuffer) {
         if context.timestamp_pool != vk::QueryPool::null() {
             self.vk().destroy_query_pool(context.timestamp_pool, None);
@@ -2549,6 +2657,7 @@ impl Device {
         }
         *context = CommandBuffer::default();
     }
+
     unsafe fn destroy_command_contexts(&mut self) {
         if !self.next_command_context.is_null() {
             (*(*self.next_command_context).previous).next = ptr::null_mut();
@@ -2567,6 +2676,7 @@ impl Device {
         self.command_retirement_value = 0;
         self.completed_command_retirement = 0;
     }
+
     unsafe fn reset_command_context(&self, context: *mut CommandBuffer) {
         debug_assert!(
             (*context).state.is_null()
@@ -2578,6 +2688,7 @@ impl Device {
         );
         (*context).retire_value = 0;
     }
+
     unsafe fn reset_retired_command_contexts(&self) {
         if self.next_command_context.is_null() {
             return;
@@ -2595,6 +2706,7 @@ impl Device {
             }
         }
     }
+
     unsafe fn acquire_command_context(&mut self) -> *mut CommandBuffer {
         let mut context = self.next_command_context;
         debug_assert!(!context.is_null());
@@ -2615,6 +2727,7 @@ impl Device {
         self.next_command_context = (*context).next;
         context
     }
+
     unsafe fn collect_swapchains(&mut self) {
         if let (Some(device), Some(swapchains)) = (&self.device, &self.swapchain_api) {
             self.swapchain_delete_queue.collect(
@@ -2624,6 +2737,7 @@ impl Device {
             );
         }
     }
+
     unsafe fn poll_command_retirement(&mut self) {
         if self.command_retirement == vk::Semaphore::null()
             || self.completed_command_retirement == self.command_retirement_value
@@ -2645,6 +2759,7 @@ impl Device {
         self.reset_retired_command_contexts();
         self.collect_swapchains();
     }
+
     unsafe fn wait_command_retirement(&mut self, value: u64) {
         debug_assert!(value <= self.command_retirement_value);
         if value > self.completed_command_retirement {
@@ -2661,6 +2776,7 @@ impl Device {
         self.reset_retired_command_contexts();
         self.collect_swapchains();
     }
+
     unsafe fn next_command_retirement(&mut self) -> u64 {
         let next = self.command_retirement_value + 1;
         if next - self.completed_command_retirement > self.max_timeline_value_difference {
@@ -2672,6 +2788,7 @@ impl Device {
         self.command_retirement_value = next;
         next
     }
+
     unsafe fn create_present_context(&mut self, index: usize) -> Result<()> {
         self.present_contexts[index].acquired = self
             .vk()
@@ -2684,6 +2801,7 @@ impl Device {
             .create_fence(&vk::FenceCreateInfo::default(), None)?;
         Ok(())
     }
+
     unsafe fn destroy_present_context(&mut self, index: usize) {
         let context = std::mem::take(&mut self.present_contexts[index]);
         debug_assert!(!context.present_pending);
@@ -2697,6 +2815,7 @@ impl Device {
             self.vk().destroy_fence(context.presented, None);
         }
     }
+
     unsafe fn finish_present_context(&mut self, index: usize) {
         debug_assert!(!self.present_contexts[index].present_pending);
         let completed = std::mem::replace(
@@ -2719,6 +2838,7 @@ impl Device {
             return;
         }
     }
+
     unsafe fn wait_present_context(&mut self, index: usize) {
         if !self.present_contexts[index].present_pending {
             return;
@@ -2731,6 +2851,7 @@ impl Device {
         self.present_contexts[index].present_pending = false;
         self.finish_present_context(index);
     }
+
     unsafe fn poll_present_contexts(&mut self) {
         for index in 0..self.present_context_count {
             if self.present_contexts[index].present_pending
@@ -2744,6 +2865,7 @@ impl Device {
             }
         }
     }
+
     unsafe fn queue_retired_swapchain(&mut self, retired: RetiredSwapchain) {
         debug_assert!(retired.handle != vk::SwapchainKHR::null() && retired.view_count != 0);
         debug_assert_eq!(self.active_command_buffers, 0);
@@ -2753,6 +2875,7 @@ impl Device {
         }
         self.collect_swapchains();
     }
+
     unsafe fn drain_contexts(&mut self) {
         self.wait_command_retirement(self.command_retirement_value);
         for index in 0..self.present_context_count {
@@ -2784,6 +2907,7 @@ pub unsafe fn create_timeline_semaphore(
         semaphore,
     })))
 }
+
 pub unsafe fn destroy_timeline_semaphore(semaphore: *mut TimelineSemaphore) {
     if semaphore.is_null() {
         return;
@@ -2793,6 +2917,7 @@ pub unsafe fn destroy_timeline_semaphore(semaphore: *mut TimelineSemaphore) {
         .vk()
         .destroy_semaphore(semaphore.semaphore, None);
 }
+
 pub unsafe fn timeline_completed_value(semaphore: *const TimelineSemaphore) -> u64 {
     debug_assert!(!semaphore.is_null());
     require(
@@ -2801,6 +2926,7 @@ pub unsafe fn timeline_completed_value(semaphore: *const TimelineSemaphore) -> u
             .get_semaphore_counter_value((*semaphore).semaphore),
     )
 }
+
 pub unsafe fn wait_timeline(point: TimelinePoint) {
     debug_assert!(!point.semaphore.is_null());
     let device = (*point.semaphore).state;
@@ -2814,6 +2940,7 @@ pub unsafe fn wait_timeline(point: TimelinePoint) {
     );
     (*device).poll_command_retirement();
 }
+
 pub unsafe fn wait_idle(device: *mut Device) {
     debug_assert!(
         !device.is_null()
@@ -2823,9 +2950,11 @@ pub unsafe fn wait_idle(device: *mut Device) {
     (*device).drain_contexts();
     (*device).next_present_context = 0;
 }
+
 pub fn get_device_caps(device: &Device) -> &DeviceCaps {
     &device.caps
 }
+
 pub fn supports_texture_format(device: &Device, format: Format, usage: TextureUsage) -> bool {
     debug_assert!(format != Format::Undefined && usage.0 != 0 && usage.0 & !0x3f == 0);
     let info = get_texture_format_info(format);
@@ -2855,6 +2984,7 @@ pub fn supports_texture_format(device: &Device, format: Format, usage: TextureUs
     }
     device.format_features[format as usize].contains(required_format_features(usage))
 }
+
 /// Allocates a raw GPU block. Descriptor heap ranges include exactly the requested usable
 /// bytes; implementation-reserved storage is appended outside the returned range.
 pub unsafe fn create_gpu_heap(
@@ -2945,6 +3075,7 @@ pub unsafe fn create_gpu_heap(
         })),
     })
 }
+
 pub unsafe fn destroy_gpu_heap(heap: GpuHeap) {
     if heap.owner.is_null() {
         return;
@@ -2964,6 +3095,7 @@ struct PreparedTexture {
     format_list: vk::ImageFormatListCreateInfo<'static>,
     image_info: vk::ImageCreateInfo<'static>,
 }
+
 impl PreparedTexture {
     fn new(device: &Device, desc: &TextureDesc) -> Self {
         let mut view_formats = [vk::Format::UNDEFINED; FORMAT_COUNT];
@@ -3014,6 +3146,7 @@ impl PreparedTexture {
                 .initial_layout(vk::ImageLayout::UNDEFINED),
         }
     }
+
     fn info(&mut self) -> &vk::ImageCreateInfo<'_> {
         self.format_list.view_format_count = self.view_format_count as u32;
         self.format_list.p_view_formats = self.view_formats.as_ptr();
@@ -3025,6 +3158,7 @@ impl PreparedTexture {
         &self.image_info
     }
 }
+
 pub unsafe fn create_texture_heap(device: *mut Device, byte_count: u64) -> Result<TextureHeap> {
     debug_assert!(!device.is_null());
     let memory = (*device).vk().allocate_memory(
@@ -3041,6 +3175,7 @@ pub unsafe fn create_texture_heap(device: *mut Device, byte_count: u64) -> Resul
         })),
     })
 }
+
 pub unsafe fn destroy_texture_heap(heap: TextureHeap) {
     if heap.owner.is_null() {
         return;
@@ -3048,6 +3183,7 @@ pub unsafe fn destroy_texture_heap(heap: TextureHeap) {
     let owner = Box::from_raw(heap.owner);
     (*owner.state).vk().free_memory(owner.memory, None);
 }
+
 pub unsafe fn get_texture_size_align(device: *mut Device, desc: &TextureDesc) -> SizeAlign {
     debug_assert!(!device.is_null());
     let mut texture = PreparedTexture::new(&*device, desc);
@@ -3057,6 +3193,7 @@ pub unsafe fn get_texture_size_align(device: *mut Device, desc: &TextureDesc) ->
         align: requirements.alignment,
     }
 }
+
 pub unsafe fn create_texture(
     device: *mut Device,
     desc: &TextureDesc,
@@ -3097,6 +3234,7 @@ pub unsafe fn create_texture(
     );
     Ok(result)
 }
+
 pub unsafe fn destroy_texture(texture: *mut Texture) {
     if texture.is_null() {
         return;
@@ -3107,6 +3245,7 @@ pub unsafe fn destroy_texture(texture: *mut Texture) {
     let texture = Box::from_raw(texture);
     (*texture.state).vk().destroy_image(texture.image, None);
 }
+
 pub unsafe fn create_render_view(
     texture: *mut Texture,
     desc: &RenderViewDesc,
@@ -3134,6 +3273,7 @@ pub unsafe fn create_render_view(
         swapchain_view: false,
     })))
 }
+
 pub unsafe fn destroy_render_view(view: *mut RenderView) {
     if view.is_null() {
         return;
@@ -3142,6 +3282,7 @@ pub unsafe fn destroy_render_view(view: *mut RenderView) {
     let view = Box::from_raw(view);
     (*view.state).vk().destroy_image_view(view.view, None);
 }
+
 pub unsafe fn write_texture_descriptor(
     device: *mut Device,
     cpu_destination: *mut c_void,
@@ -3219,6 +3360,7 @@ pub unsafe fn write_texture_descriptor(
         .result(),
     );
 }
+
 pub unsafe fn write_sampler_descriptor(
     device: *mut Device,
     cpu_destination: *mut c_void,
@@ -3253,6 +3395,7 @@ pub unsafe fn write_sampler_descriptor(
         .result(),
     );
 }
+
 unsafe fn retire_swapchain_handle(swapchain: *mut Swapchain) {
     let device = (*swapchain).state;
     if (*swapchain).handle == vk::SwapchainKHR::null() {
@@ -3298,6 +3441,7 @@ unsafe fn retire_swapchain_handle(swapchain: *mut Swapchain) {
     }
     (*device).queue_retired_swapchain(retired);
 }
+
 fn choose_composite_alpha(supported: vk::CompositeAlphaFlagsKHR) -> vk::CompositeAlphaFlagsKHR {
     for choice in [
         vk::CompositeAlphaFlagsKHR::OPAQUE,
@@ -3311,6 +3455,7 @@ fn choose_composite_alpha(supported: vk::CompositeAlphaFlagsKHR) -> vk::Composit
     }
     panic!("surface exposes no composite alpha mode")
 }
+
 fn drawable_extent(device: &Device, capabilities: &vk::SurfaceCapabilitiesKHR) -> vk::Extent2D {
     if capabilities.current_extent.width != u32::MAX
         && capabilities.current_extent.height != u32::MAX
@@ -3332,6 +3477,7 @@ fn drawable_extent(device: &Device, capabilities: &vk::SurfaceCapabilitiesKHR) -
         ),
     }
 }
+
 unsafe fn swapchain_surface_configuration_changed(swapchain: *const Swapchain) -> bool {
     let device = &*(*swapchain).state;
     let capabilities = require(
@@ -3346,6 +3492,7 @@ unsafe fn swapchain_surface_configuration_changed(swapchain: *const Swapchain) -
         || choose_composite_alpha(capabilities.supported_composite_alpha)
             != (*swapchain).composite_alpha
 }
+
 unsafe fn recreate_swapchain(swapchain: *mut Swapchain) -> Result<()> {
     let device = (*swapchain).state;
     debug_assert!(
@@ -3480,6 +3627,7 @@ unsafe fn recreate_swapchain(swapchain: *mut Swapchain) -> Result<()> {
     }
     Ok(())
 }
+
 pub unsafe fn get_drawable_extent(device: *mut Device) -> Uint32x2 {
     debug_assert!(
         !device.is_null()
@@ -3506,6 +3654,7 @@ pub unsafe fn get_drawable_extent(device: *mut Device) -> Uint32x2 {
         y: extent.height,
     }
 }
+
 /// Returns `None` while the drawable extent is zero. Call from winit's redraw handling;
 /// use `get_drawable_extent` after resize events before beginning command recording.
 pub unsafe fn acquire(device: *mut Device) -> Option<SwapchainFrame> {
@@ -3562,6 +3711,7 @@ pub unsafe fn acquire(device: *mut Device) -> Option<SwapchainFrame> {
         });
     }
 }
+
 unsafe fn create_raster_pso(
     device: *mut Device,
     first_stage_spirv: &[u32],
@@ -3689,6 +3839,7 @@ unsafe fn create_raster_pso(
         bind_point: vk::PipelineBindPoint::GRAPHICS,
     })))
 }
+
 pub unsafe fn create_graphics_pso(
     device: *mut Device,
     desc: &GraphicsPSODesc<'_>,
@@ -3704,6 +3855,7 @@ pub unsafe fn create_graphics_pso(
         false,
     )
 }
+
 pub unsafe fn create_mesh_pso(device: *mut Device, desc: &MeshPSODesc<'_>) -> Result<*mut PSO> {
     create_raster_pso(
         device,
@@ -3716,6 +3868,7 @@ pub unsafe fn create_mesh_pso(device: *mut Device, desc: &MeshPSODesc<'_>) -> Re
         true,
     )
 }
+
 pub unsafe fn create_compute_pso(device: *mut Device, compute_spirv: &[u32]) -> Result<*mut PSO> {
     debug_assert!(!device.is_null());
     let mut module = vk::ShaderModuleCreateInfo::default().code(compute_spirv);
@@ -3750,6 +3903,7 @@ pub unsafe fn create_compute_pso(device: *mut Device, compute_spirv: &[u32]) -> 
         bind_point: vk::PipelineBindPoint::COMPUTE,
     })))
 }
+
 pub unsafe fn destroy_pso(pso: *mut PSO) {
     if pso.is_null() {
         return;
@@ -3757,6 +3911,7 @@ pub unsafe fn destroy_pso(pso: *mut PSO) {
     let pso = Box::from_raw(pso);
     (*pso.state).vk().destroy_pipeline(pso.pso, None);
 }
+
 pub unsafe fn bind_pso(commands: *mut CommandBuffer, pso: *const PSO) {
     debug_assert!(!commands.is_null() && !pso.is_null());
     (*(*commands).state).vk().cmd_bind_pipeline(
@@ -3777,6 +3932,7 @@ unsafe fn record_image_barriers(
         &vk::DependencyInfo::default().image_memory_barriers(barriers),
     );
 }
+
 /// The first begun command buffer initializes pending textures and the acquired swapchain
 /// image. It must be first in the next submission, which consumes every begun buffer.
 pub unsafe fn begin_commands(device: *mut Device) -> *mut CommandBuffer {
@@ -3855,6 +4011,7 @@ pub unsafe fn begin_commands(device: *mut Device) -> *mut CommandBuffer {
     (*device).active_command_buffers += 1;
     result
 }
+
 unsafe fn submit_commands(
     commands: &[*mut CommandBuffer],
     device: *mut Device,
@@ -3947,6 +4104,7 @@ unsafe fn submit_commands(
         (*current).swapchain = ptr::null_mut();
     }
 }
+
 pub unsafe fn submit(commands: &[*mut CommandBuffer], completion: TimelinePoint) {
     debug_assert!(
         !commands.is_empty() && !commands[0].is_null() && !(*commands[0]).state.is_null()
@@ -3966,6 +4124,7 @@ pub unsafe fn submit(commands: &[*mut CommandBuffer], completion: TimelinePoint)
         vk::Semaphore::null(),
     );
 }
+
 pub unsafe fn submit_and_present(
     device: *mut Device,
     commands: &[*mut CommandBuffer],
@@ -4050,6 +4209,7 @@ pub unsafe fn submit_and_present(
         }
     }
 }
+
 pub unsafe fn write_timestamp(commands: *mut CommandBuffer, gpu_destination: u64, stage: Stage) {
     debug_assert!(!commands.is_null() && !(*commands).state.is_null());
     let device = &*(*commands).state;
@@ -4064,6 +4224,7 @@ pub unsafe fn write_timestamp(commands: *mut CommandBuffer, gpu_destination: u64
     );
     (*commands).timestamp_count += 1;
 }
+
 fn make_heap_bind_info(
     heap: GpuRange,
     reserved_alignment: u64,
@@ -4078,6 +4239,7 @@ fn make_heap_bind_info(
         .reserved_range_offset(offset)
         .reserved_range_size(reserved_size)
 }
+
 pub unsafe fn set_texture_descriptor_heap(commands: *mut CommandBuffer, heap: GpuRange) {
     debug_assert!(!commands.is_null() && !(*commands).state.is_null());
     let device = &*(*commands).state;
@@ -4091,6 +4253,7 @@ pub unsafe fn set_texture_descriptor_heap(commands: *mut CommandBuffer, heap: Gp
     );
     (device.functions().cmd_bind_texture_heap)((*commands).command_buffer, &info);
 }
+
 pub unsafe fn set_sampler_descriptor_heap(commands: *mut CommandBuffer, heap: GpuRange) {
     debug_assert!(!commands.is_null() && !(*commands).state.is_null());
     let device = &*(*commands).state;
@@ -4101,6 +4264,7 @@ pub unsafe fn set_sampler_descriptor_heap(commands: *mut CommandBuffer, heap: Gp
     );
     (device.functions().cmd_bind_sampler_heap)((*commands).command_buffer, &info);
 }
+
 pub unsafe fn set_viewport(commands: *mut CommandBuffer, viewport: &Viewport) {
     debug_assert!(!commands.is_null());
     let viewport = vk::Viewport {
@@ -4115,6 +4279,7 @@ pub unsafe fn set_viewport(commands: *mut CommandBuffer, viewport: &Viewport) {
         .vk()
         .cmd_set_viewport_with_count((*commands).command_buffer, &[viewport]);
 }
+
 pub unsafe fn set_scissor(commands: *mut CommandBuffer, scissor: &Scissor) {
     debug_assert!(!commands.is_null());
     let scissor = vk::Rect2D {
@@ -4131,6 +4296,7 @@ pub unsafe fn set_scissor(commands: *mut CommandBuffer, scissor: &Scissor) {
         .vk()
         .cmd_set_scissor_with_count((*commands).command_buffer, &[scissor]);
 }
+
 pub unsafe fn set_depth_stencil(commands: *mut CommandBuffer, state: &DepthStencilState) {
     debug_assert!(!commands.is_null());
     let device = (*(*commands).state).vk();
@@ -4182,6 +4348,7 @@ pub unsafe fn set_depth_stencil(commands: *mut CommandBuffer, state: &DepthStenc
         state.back.reference as u32,
     );
 }
+
 pub unsafe fn begin_render_pass(commands: *mut CommandBuffer, desc: &RenderingDesc<'_>) {
     debug_assert!(!commands.is_null() && desc.colors.len() <= MAX_COLOR_ATTACHMENTS);
     let area_view = if !desc.colors.is_empty() {
@@ -4279,12 +4446,14 @@ pub unsafe fn begin_render_pass(commands: *mut CommandBuffer, desc: &RenderingDe
     );
     set_depth_stencil(commands, &DepthStencilState::default());
 }
+
 pub unsafe fn end_render_pass(commands: *mut CommandBuffer) {
     debug_assert!(!commands.is_null());
     (*(*commands).state)
         .vk()
         .cmd_end_rendering((*commands).command_buffer);
 }
+
 unsafe fn emit_root_data(commands: *mut CommandBuffer, root: &[u8]) {
     if root.is_empty() {
         return;
@@ -4297,6 +4466,7 @@ unsafe fn emit_root_data(commands: *mut CommandBuffer, root: &[u8]) {
     });
     ((*(*commands).state).functions().cmd_push_data)((*commands).command_buffer, &info);
 }
+
 pub unsafe fn draw(
     commands: *mut CommandBuffer,
     root: &[u8],
@@ -4315,6 +4485,7 @@ pub unsafe fn draw(
         first_instance,
     );
 }
+
 pub unsafe fn draw_indexed(
     commands: *mut CommandBuffer,
     root: &[u8],
@@ -4346,6 +4517,7 @@ pub unsafe fn draw_indexed(
         first_instance,
     );
 }
+
 pub unsafe fn draw_indirect(
     commands: *mut CommandBuffer,
     root: &[u8],
@@ -4369,6 +4541,7 @@ pub unsafe fn draw_indirect(
         .draw_count(draw_count);
     ((*(*commands).state).functions().cmd_draw_indirect)((*commands).command_buffer, &info);
 }
+
 pub unsafe fn draw_indexed_indirect(
     commands: *mut CommandBuffer,
     root: &[u8],
@@ -4403,6 +4576,7 @@ pub unsafe fn draw_indexed_indirect(
         .draw_count(draw_count);
     (device.functions().cmd_draw_indexed_indirect)((*commands).command_buffer, &info);
 }
+
 pub unsafe fn dispatch(commands: *mut CommandBuffer, root: &[u8], group_count: Uint32x3) {
     debug_assert!(!commands.is_null());
     emit_root_data(commands, root);
@@ -4413,6 +4587,7 @@ pub unsafe fn dispatch(commands: *mut CommandBuffer, root: &[u8], group_count: U
         group_count.z,
     );
 }
+
 pub unsafe fn dispatch_indirect(commands: *mut CommandBuffer, root: &[u8], arguments: GpuRange) {
     debug_assert!(!commands.is_null() && !(*commands).state.is_null());
     emit_root_data(commands, root);
@@ -4424,6 +4599,7 @@ pub unsafe fn dispatch_indirect(commands: *mut CommandBuffer, root: &[u8], argum
         .address_flags(ADDRESS_FLAGS);
     ((*(*commands).state).functions().cmd_dispatch_indirect)((*commands).command_buffer, &info);
 }
+
 pub unsafe fn draw_meshlets(commands: *mut CommandBuffer, root: &[u8], group_count: Uint32x3) {
     debug_assert!(!commands.is_null() && !(*commands).state.is_null());
     emit_root_data(commands, root);
@@ -4434,6 +4610,7 @@ pub unsafe fn draw_meshlets(commands: *mut CommandBuffer, root: &[u8], group_cou
         group_count.z,
     );
 }
+
 pub unsafe fn draw_meshlets_indirect(
     commands: *mut CommandBuffer,
     root: &[u8],
@@ -4459,6 +4636,7 @@ pub unsafe fn draw_meshlets_indirect(
         .functions()
         .cmd_draw_mesh_tasks_indirect)((*commands).command_buffer, &info);
 }
+
 pub unsafe fn copy_memory(commands: *mut CommandBuffer, source: GpuRange, destination: GpuRange) {
     debug_assert!(!commands.is_null() && !(*commands).state.is_null());
     let regions = [vk::DeviceMemoryCopyKHR::default()
@@ -4475,6 +4653,7 @@ pub unsafe fn copy_memory(commands: *mut CommandBuffer, source: GpuRange, destin
     let info = vk::CopyDeviceMemoryInfoKHR::default().regions(&regions);
     ((*(*commands).state).functions().cmd_copy_memory)((*commands).command_buffer, &info);
 }
+
 fn make_texture_copy_region(
     texture: &Texture,
     copy: &TextureCopyDesc,
@@ -4541,6 +4720,7 @@ fn make_texture_copy_region(
             },
         })
 }
+
 pub unsafe fn copy_memory_to_texture(
     commands: *mut CommandBuffer,
     source: GpuRange,
@@ -4554,6 +4734,7 @@ pub unsafe fn copy_memory_to_texture(
         .regions(&regions);
     ((*(*commands).state).functions().cmd_copy_memory_to_image)((*commands).command_buffer, &info);
 }
+
 pub unsafe fn copy_texture_to_memory(
     commands: *mut CommandBuffer,
     source: *mut Texture,
@@ -4567,6 +4748,7 @@ pub unsafe fn copy_texture_to_memory(
         .regions(&regions);
     ((*(*commands).state).functions().cmd_copy_image_to_memory)((*commands).command_buffer, &info);
 }
+
 pub unsafe fn barrier(
     commands: *mut CommandBuffer,
     before: Stage,
