@@ -1,4 +1,4 @@
-use std::{error::Error, fs, path::Path, rc::Rc};
+use std::{error::Error, fs, path::Path, sync::Arc};
 use winit::{
     application::ApplicationHandler,
     dpi::LogicalSize,
@@ -9,7 +9,7 @@ use winit::{
 };
 
 pub trait Example: Sized {
-    fn new(window: Rc<Window>) -> Result<Self, Box<dyn Error>>;
+    fn new(window: Arc<Window>) -> Result<Self, Box<dyn Error>>;
     fn render(&mut self);
     fn shutdown(self);
 }
@@ -19,7 +19,7 @@ struct ExampleRunner<E> {
     width: u32,
     height: u32,
     example: Option<E>,
-    window: Option<Rc<Window>>,
+    window: Option<Arc<Window>>,
     error: Option<Box<dyn Error>>,
 }
 
@@ -41,7 +41,7 @@ impl<E: Example> ApplicationHandler for ExampleRunner<E> {
             .with_title(self.title.clone())
             .with_inner_size(LogicalSize::new(self.width, self.height));
         let window = match event_loop.create_window(attributes) {
-            Ok(window) => Rc::new(window),
+            Ok(window) => Arc::new(window),
             Err(error) => {
                 self.error = Some(Box::new(error));
                 event_loop.exit();
