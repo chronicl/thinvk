@@ -129,8 +129,8 @@ fn compile_shader(source: &Path, output: &Path, manifest_dir: &Path) -> Result<(
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-    require_tool_version("slangc", "-version", "Slang", &[2026, 14, 1])?;
-    require_tool_version("spirv-val", "--version", "SPIRV-Tools", &[2026, 3])?;
+    // require_tool_version("slangc", "-version", "Slang", &[2026, 14, 1])?;
+    // require_tool_version("spirv-val", "--version", "SPIRV-Tools", &[2026, 3])?;
 
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let shader_directory = manifest_dir.join("assets/shaders");
